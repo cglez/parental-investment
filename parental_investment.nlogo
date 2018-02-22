@@ -6,11 +6,11 @@ turtles-own [
   ; state
   energy
   age
-  nurturing
+  breeding
 
   ; g-type
-  a-nurturing  ; a-class energy spent in offspring
-  b-nurturing  ; b-class energy spent in offspring
+  a-breeding    ; sex-a breeding time
+  b-breeding    ; sex-b breeding time
   ;number-eggs  ; number of eggs spawn
   ;egg-size     ; aka energy provided to each descendent
 ]
@@ -23,19 +23,17 @@ patches-own [
 ]
 
 ;# Constants
-to-report adult-age      report 80  end  ; age when an organism is mature to reproduce
-to-report stride         report 1   end  ; stride length
+to-report adult-age report 80 end  ; age when an organism is mature to reproduce
+to-report stride    report 1  end  ; stride length
 
 ;# Main functions
 to setup
   clear-all
-
   ; setup the terrain
   ask patches [
     set pcolor green + 1
     set hatching 0
   ]
-
   ; create the specimens, then initialize their variables
   set-default-shape sex-a "a-shape"
   set-default-shape sex-b "b-shape"
@@ -52,36 +50,36 @@ to setup
     set age adult-age
     set size 3
     set energy random max-energy
-    set nurturing 0
+    set breeding 0
     setxy random-xcor random-ycor
-
     ; initial g-type
-    set a-nurturing random hatch-age
-    set b-nurturing random hatch-age
-    ;set number-eggs 2
-    ;set egg-size 50
+    set a-breeding random hatch-age
+    set b-breeding random hatch-age
+    ;set number-eggs random initial-number-eggs
+    ;set egg-size random initial-egg-size
   ]
-
   reset-ticks
 end
 
 to go
+  ; stop simulation when any sex dissapears
   if not any? sex-a or not any? sex-b [ stop ]
   ; control population
-  ; TODO: energy-based population control
   if count turtles > max-population [
     ask max-n-of (count turtles - max-population) turtles [age] [
       die
     ]
   ]
+  ;
   ask turtles [
     be-born
     grow
     reproduce
     and-die
   ]
+  ;
   ask patches [
-    leave-nest
+    eclose
   ]
   tick
 end
@@ -100,7 +98,7 @@ to metabolize ;.turtle
   ; increase age
   set age age + 1
   ; eat
-  set energy energy + 2
+  set energy energy + 1
   ; nurture offspring if any
   nurture
   ; change appearance with age
@@ -109,32 +107,34 @@ to metabolize ;.turtle
 end
 
 to nurture ;.turtle
-  if nurturing = 0 [ stop ]
-  set nurturing nurturing - 1
-  let nurturing-energy 0
+  ; check the adult is breeding
+  if breeding = 0 [ stop ]
+  ; spend energy
+  ; TODO: breeding is proportional to time!!
+  set breeding breeding - 1
+  let breeding-energy 0
   ifelse breed = sex-a [
-    set nurturing-energy a-nurturing
+    set breeding-energy a-breeding
   ] [
-    set nurturing-energy b-nurturing
+    set breeding-energy b-breeding
   ]
-  set energy energy - nurturing-energy
+  set energy energy - breeding-energy
+  ; and give it to the offspring
   let offspring turtle-set turtles-here with [ size = 0 ]
   ask offspring [
-    set energy energy + (nurturing-energy / count offspring)
+    set energy energy + (breeding-energy / count offspring)
   ]
 end
 
 to move ;.turtle
   ; check movility
   if age < hatch-age or  ; eggs can't move
-     nurturing > 0       ; when nurturing stay at home
+     breeding > 0        ; when breeding, stay at home
     [ stop ]
   ; take a step in a random direction
   right random-float 50
   left random-float 50
   forward stride
-  ; the bigger the stride the more the energy you spend
-  set energy energy - stride
 end
 
 to reproduce ;.turtle
@@ -150,7 +150,7 @@ to reproduce ;.turtle
   let parents (turtle-set parent-a parent-b)
   ; TODO comment
   if count parents = 2 [
-    ; make a nest
+    ; make a nest for the egg cluster
     ask patch-here [
       set pcolor white
       set hatching hatch-age
@@ -169,16 +169,16 @@ to reproduce ;.turtle
         set breed sex-b
         set color orange
       ]
-      set nurturing 0
+      set breeding 0
       ; inherit mutated g-type
-      set a-nurturing mutate ([ a-nurturing ] of one-of parents) drift
-      set b-nurturing mutate ([ b-nurturing ] of one-of parents) drift
+      set a-breeding mutate ([ a-breeding ] of one-of parents) drift
+      set b-breeding mutate ([ b-breeding ] of one-of parents) drift
       ;set number-eggs mutate ([ number-eggs ] of parent-a) drift
       ;set egg-size mutate ([ egg-size ] of parent-a) drift
     ]
-    ; start nurturing
-    ask parent-a [ set nurturing a-nurturing ]
-    ask parent-b [ set nurturing b-nurturing ]
+    ; start breeding
+    ask parent-a [ set breeding a-breeding ]
+    ask parent-b [ set breeding b-breeding ]
   ]
 end
 
@@ -187,27 +187,27 @@ to and-die ;.turtle
   if energy <= 0 [ die ]
 end
 
-to invation [ n x-nurturing y-nurturing ]
+to invation [ n x-breeding y-breeding ]
   ; check parameter integrity
   if n < 0 or
-     x-nurturing < 0 or
-     y-nurturing < 0
+     x-breeding < 0 or
+     y-breeding < 0
     [ stop ]
 
   create-turtles n [
-    set a-nurturing x-nurturing
-    set b-nurturing y-nurturing
+    set a-breeding x-breeding
+    set b-breeding y-breeding
     ifelse random 2 = 0 [ set breed sex-a ] [ set breed sex-b ]
     set color red
     set age adult-age
     set size 3
     set energy random max-energy
-    set nurturing 0
+    set breeding 0
     setxy random-xcor random-ycor
   ]
 end
 
-to leave-nest ;.patch
+to eclose ;.patch
   if hatching > 0 [ set hatching hatching - 1 ]
   if pcolor = white and hatching = 0 [
     set pcolor green + 1
@@ -315,7 +315,7 @@ PENS
 "sex-a" 1.0 0 -7500403 true "" "plot count sex-a"
 "sex-b" 1.0 0 -955883 true "" "plot count sex-b"
 "eggs" 1.0 0 -1184463 true "" "plot count patches with [ pcolor = white ]"
-"nurturing" 1.0 0 -5825686 true "" "plot count turtles with [ nurturing > 0 ]"
+"breeding" 1.0 0 -5825686 true "" "plot count turtles with [ breeding > 0 ]"
 
 MONITOR
 785
@@ -376,15 +376,15 @@ true
 true
 "" ""
 PENS
-"a-nurturing" 1.0 0 -7500403 true "" "if any? sex-a\n[ plot mean [a-nurturing] of sex-a ]"
-"b-nurturing" 1.0 0 -955883 true "" "if any? sex-b\n[ plot mean [b-nurturing] of sex-b ]"
+"a-breeding" 1.0 0 -7500403 true "" "if any? sex-a\n[ plot mean [a-breeding] of sex-a ]"
+"b-breeding" 1.0 0 -955883 true "" "if any? sex-b\n[ plot mean [b-breeding] of sex-b ]"
 
 PLOT
 690
 265
 920
 385
-b-nurturing histogram
+b-breeding histogram
 energy
 number
 0.0
@@ -393,7 +393,7 @@ number
 50.0
 true
 false
-"set-histogram-num-bars 50" "histogram [ b-nurturing ] of sex-b  ; using the default plot pen"
+"set-histogram-num-bars 50" "histogram [ b-breeding ] of sex-b  ; using the default plot pen"
 PENS
 "default" 1.0 1 -955883 true "" ""
 
@@ -402,7 +402,7 @@ PLOT
 265
 682
 385
-a-nurturing histogram
+a-breeding histogram
 energy
 number
 0.0
@@ -411,7 +411,7 @@ number
 50.0
 true
 false
-"set-histogram-num-bars 50" "histogram [ a-nurturing ] of sex-a  ; using the default plot pen"
+"set-histogram-num-bars 50" "histogram [ a-breeding ] of sex-a  ; using the default plot pen"
 PENS
 "default" 1.0 1 -7500403 true "" ""
 
@@ -420,8 +420,8 @@ MONITOR
 150
 860
 195
-a-nurturing
-mean [a-nurturing] of sex-a
+a-breeding
+mean [a-breeding] of sex-a
 2
 1
 11
@@ -431,8 +431,8 @@ MONITOR
 195
 860
 240
-b-nurturing
-mean [b-nurturing] of sex-b
+b-breeding
+mean [b-breeding] of sex-b
 2
 1
 11
@@ -462,8 +462,8 @@ MONITOR
 70
 915
 115
-nurturing
-count turtles with [ nurturing > 0 ]
+breeding
+count turtles with [ breeding > 0 ]
 17
 1
 11
@@ -564,7 +564,7 @@ MONITOR
 684
 435
 (A) mean investement / hatch age
-mean [ a-nurturing ] of sex-a / hatch-age
+mean [ a-breeding ] of sex-a / hatch-age
 2
 1
 11
@@ -575,7 +575,7 @@ MONITOR
 920
 435
 (B) mean investment / hatch age
-mean [ b-nurturing ] of sex-b / hatch-age
+mean [ b-breeding ] of sex-b / hatch-age
 2
 1
 11
@@ -583,7 +583,7 @@ mean [ b-nurturing ] of sex-b / hatch-age
 @#$#@#$#@
 ## What Is It?
 
-This is an ecosystem model for the study of parental investment in sexual reproduction and focused primarily on sexual conflict. In this model, a life form with two sexes reproduce and spend time in their offspring so to increase their chance of survival. The amount of time a parent is to spend on nurturing is determined by its genes. Each sex exhibits differentiated behaviour thanks to genes that are expressed only in their respective sex. These traits are transmitted to the descendants and open to variation through mutation.
+This is an ecosystem model for the study of parental investment in sexual reproduction and focused primarily on sexual conflict. In this model, a life form with two sexes reproduce and spend time in their offspring so to increase their chance of survival. The amount of time a parent is to spend on breeding is determined by its genes. Each sex exhibits differentiated behaviour thanks to genes that are expressed only in their respective sex. These traits are transmitted to the descendants and open to variation through mutation.
 
 This model is based on predator-prey ecosystem with inheritance model called _Wolf-Sheep stride inheritance_ from the NetLogo library. 
 
