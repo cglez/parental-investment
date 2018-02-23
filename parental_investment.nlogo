@@ -12,7 +12,7 @@ turtles-own [
   a-breeding    ; sex-a breeding time
   b-breeding    ; sex-b breeding time
   ;number-eggs  ; number of eggs spawn
-  ;egg-size     ; aka energy provided to each descendent
+  ;egg-size     ; energy provided to each descendent
 ]
 
 breed [ sex-a a-organism ]
@@ -23,7 +23,7 @@ patches-own [
 ]
 
 ;# Constants
-to-report adult-age report 80 end  ; age when an organism is mature to reproduce
+to-report adult-age report 80 end  ; age when an organism is mature and can reproduce
 to-report stride    report 1  end  ; stride length
 
 ;# Main functions
@@ -40,13 +40,7 @@ to setup
   create-turtles max-population
   ask turtles [
     ; initial state
-    ifelse random 2 = 0 [  ; choose sex randomly
-      set breed sex-a
-      set color gray
-    ] [
-      set breed sex-b
-      set color orange
-    ]
+    random-sex
     set age adult-age
     set size 3
     set energy random max-energy
@@ -62,45 +56,48 @@ to setup
 end
 
 to go
-  ; stop simulation when any sex dissapears
+  ; stop simulation when any sex disappears
   if not any? sex-a or not any? sex-b [ stop ]
   ; control population
   if count turtles > max-population [
+    ; above the maximum population the oldest die
     ask max-n-of (count turtles - max-population) turtles [age] [
       die
     ]
   ]
-  ;
+  ; organisms life
   ask turtles [
     be-born
     grow
     reproduce
     and-die
   ]
-  ;
+  ; gardening
   ask patches [
-    eclose
+    clean-empty-eggs
   ]
   tick
 end
 
-;# Procedures and reporters
+;# Procedures
 to be-born ;.turtle
   ; Darwin says someone has done this for you
 end
 
 to grow ;.turtle
-  metabolize
+  ; metabolism processes
+  metabolise
+  ; nurture offspring if any
+  nurture
+  ; wander around
   move
 end
 
-to metabolize ;.turtle
+to metabolise ;.turtle
   ; increase age
   set age age + 1
   ; eat
   set energy energy + 1
-  ; nurture offspring if any
-  nurture
   ; change appearance with age
   if age = hatch-age [ set size 1 ]
   if age = adult-age [ set size 3 ]
@@ -109,25 +106,17 @@ end
 to nurture ;.turtle
   ; check the adult is breeding
   if breeding = 0 [ stop ]
-  ; spend energy
-  ; TODO: breeding is proportional to time!!
-  set breeding breeding - 1
-  let breeding-energy 0
-  ifelse breed = sex-a [
-    set breeding-energy a-breeding
-  ] [
-    set breeding-energy b-breeding
-  ]
-  set energy energy - breeding-energy
-  ; and give it to the offspring
+  ; spend energy feeding offspring
   let offspring turtle-set turtles-here with [ size = 0 ]
+  set energy energy - (count offspring * breeding-energy)
   ask offspring [
-    set energy energy + (breeding-energy / count offspring)
+    set energy energy + breeding-energy
   ]
+  set breeding breeding - 1
 end
 
 to move ;.turtle
-  ; check movility
+  ; check mobility
   if age < hatch-age or  ; eggs can't move
      breeding > 0        ; when breeding, stay at home
     [ stop ]
@@ -141,44 +130,47 @@ to reproduce ;.turtle
   ; check mating conditions
   if breed = sex-b or    ; avoid duplicated couples
      age < adult-age or  ; adults only
-     energy < min-energy-reproduce or  ; a mimimun energy is required
-     pcolor = white      ; only one nest allowed at a patch
+     energy < min-energy-reproduce or  ; a minimum energy is required
+     pcolor = white      ; only one egg cluster allowed at a patch
     [ stop ]
   ; find a suitable partner
   let parent-a self
   let parent-b one-of sex-b-here with [ age > adult-age and energy >= min-energy-reproduce ]
   let parents (turtle-set parent-a parent-b)
-  ; TODO comment
   if count parents = 2 [
     ; make a nest for the egg cluster
     ask patch-here [
       set pcolor white
       set hatching hatch-age
     ]
-    ; lay eggs and fecundate them
+    ; spawn eggs and fecundate them
     set energy (energy - number-eggs * egg-size)
     hatch number-eggs [
-      ; set state
+      ; set initial offspring state
       set energy egg-size
       set age 0
       set size 0
-      ifelse random 2 = 0 [  ; random sex
-        set breed sex-a
-        set color gray
-      ] [
-        set breed sex-b
-        set color orange
-      ]
+      random-sex
       set breeding 0
       ; inherit mutated g-type
-      set a-breeding mutate ([ a-breeding ] of one-of parents) drift
-      set b-breeding mutate ([ b-breeding ] of one-of parents) drift
-      ;set number-eggs mutate ([ number-eggs ] of parent-a) drift
-      ;set egg-size mutate ([ egg-size ] of parent-a) drift
+      set a-breeding mutate ([ a-breeding ] of one-of parents)
+      set b-breeding mutate ([ b-breeding ] of one-of parents)
+      ;set number-eggs mutate ([ number-eggs ] of one-of parents) drift
+      ;set egg-size mutate ([ egg-size ] of one-of parents) drift
     ]
     ; start breeding
     ask parent-a [ set breeding a-breeding ]
     ask parent-b [ set breeding b-breeding ]
+  ]
+end
+
+to random-sex ;.turtle
+  ifelse random 2 = 0 [
+    set breed sex-a
+    set color gray
+  ] [
+    set breed sex-b
+    set color orange
   ]
 end
 
@@ -187,17 +179,17 @@ to and-die ;.turtle
   if energy <= 0 [ die ]
 end
 
-to invation [ n x-breeding y-breeding ]
+to invasion [ n $a-breeding $b-breeding ]
   ; check parameter integrity
   if n < 0 or
-     x-breeding < 0 or
-     y-breeding < 0
+     $a-breeding < 0 or
+     $b-breeding < 0
     [ stop ]
-
+  ; create an invasion of n organisms with given g-type
   create-turtles n [
-    set a-breeding x-breeding
-    set b-breeding y-breeding
-    ifelse random 2 = 0 [ set breed sex-a ] [ set breed sex-b ]
+    set a-breeding $a-breeding
+    set b-breeding $b-breeding
+    random-sex
     set color red
     set age adult-age
     set size 3
@@ -207,15 +199,16 @@ to invation [ n x-breeding y-breeding ]
   ]
 end
 
-to eclose ;.patch
+to clean-empty-eggs ;.patch
   if hatching > 0 [ set hatching hatching - 1 ]
   if pcolor = white and hatching = 0 [
     set pcolor green + 1
   ]
 end
 
-to-report mutate [ gene g-drift ] ;.turtle
-  let gene' gene + random-float g-drift - random-float g-drift
+;# Reporters
+to-report mutate [ gene ] ;.turtle
+  let gene' gene + random-float drift - random-float drift
   if gene < 0 [ report 0 ] ; negative values make no sense
   report gene'
 end
@@ -249,9 +242,9 @@ ticks
 
 SLIDER
 50
-440
+450
 240
-473
+483
 max-population
 max-population
 2
@@ -263,10 +256,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-285
-435
-354
-468
+290
+410
+359
+443
 setup
 setup
 NIL
@@ -280,10 +273,10 @@ NIL
 1
 
 BUTTON
-355
-435
-424
-468
+360
+410
+429
+443
 go
 go
 T
@@ -352,9 +345,9 @@ count patches with [ pcolor = white ]
 
 TEXTBOX
 55
-420
+415
 235
-438
+433
 Settings
 12
 0.0
@@ -367,7 +360,7 @@ PLOT
 255
 parental investment
 time
-energy
+invest.
 0.0
 100.0
 0.0
@@ -385,17 +378,19 @@ PLOT
 920
 385
 b-breeding histogram
-energy
-number
+breeding time
+pop.
 0.0
 60.0
 0.0
 50.0
 true
 false
-"set-histogram-num-bars 50" "histogram [ b-breeding ] of sex-b  ; using the default plot pen"
+"set-plot-x-range 0 hatch-age * 1.25\nset-plot-y-range 0 max-population / 4\nset-histogram-num-bars 50" "histogram [ b-breeding ] of sex-b  ; using the default plot pen"
 PENS
 "default" 1.0 1 -955883 true "" ""
+"hatch-age" 0.0 0 -1604481 false "plot-pen-up\nplotxy hatch-age 0 \nplot-pen-down\nplotxy hatch-age plot-y-max" ""
+"mean breading time" 1.0 0 -1184463 true "" "plot-pen-reset\nlet m mean [ b-breeding ] of sex-b\nplot-pen-up\nplotxy m 0 \nplot-pen-down\nplotxy m plot-y-max"
 
 PLOT
 452
@@ -403,17 +398,19 @@ PLOT
 682
 385
 a-breeding histogram
-energy
-number
+breeding time
+pop.
 0.0
 60.0
 0.0
 50.0
 true
 false
-"set-histogram-num-bars 50" "histogram [ a-breeding ] of sex-a  ; using the default plot pen"
+"set-plot-x-range 0 hatch-age * 1.25\nset-plot-y-range 0 max-population / 4\nset-histogram-num-bars 50" "histogram [ a-breeding ] of sex-a  ; using the default plot pen"
 PENS
 "default" 1.0 1 -7500403 true "" ""
+"hatch-age" 0.0 0 -1604481 false "plot-pen-up\nplotxy hatch-age 0 \nplot-pen-down\nplotxy hatch-age plot-y-max" ""
+"mean breading time" 1.0 0 -1184463 true "" "plot-pen-reset\nlet m mean [ a-breeding ] of sex-a\nplot-pen-up\nplotxy m 0 \nplot-pen-down\nplotxy m plot-y-max"
 
 MONITOR
 785
@@ -470,9 +467,9 @@ count turtles with [ breeding > 0 ]
 
 SLIDER
 50
-480
+485
 240
-513
+518
 max-energy
 max-energy
 1
@@ -499,14 +496,14 @@ NIL
 HORIZONTAL
 
 SLIDER
-245
-480
-435
-513
+240
+450
+430
+483
 hatch-age
 hatch-age
 1
-100
+adult-age
 40.0
 1
 1
@@ -515,9 +512,9 @@ HORIZONTAL
 
 SLIDER
 50
-560
+555
 240
-593
+588
 drift
 drift
 0
@@ -529,10 +526,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-245
-520
-435
-553
+240
+485
+430
+518
 egg-size
 egg-size
 0
@@ -544,10 +541,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-245
-560
-435
-593
+240
+520
+430
+553
 number-eggs
 number-eggs
 1
@@ -563,7 +560,7 @@ MONITOR
 390
 684
 435
-(A) mean investement / hatch age
+(A) mean investment / hatch age
 mean [ a-breeding ] of sex-a / hatch-age
 2
 1
@@ -579,6 +576,21 @@ mean [ b-breeding ] of sex-b / hatch-age
 2
 1
 11
+
+SLIDER
+240
+555
+430
+588
+breeding-energy
+breeding-energy
+0
+40
+10.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## What Is It?
@@ -685,8 +697,6 @@ Polygon -7500403 true true 221 149 195 101 106 99 80 148
 @#$#@#$#@
 NetLogo 6.0.2
 @#$#@#$#@
-setup
-repeat 75 [ go ]
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
