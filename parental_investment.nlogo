@@ -6,11 +6,11 @@ turtles-own [
   ; state
   energy
   age
-  breeding
+  nurturing
 
   ; g-type
-  a-breeding    ; sex-a breeding time
-  b-breeding    ; sex-b breeding time
+  a-nurturing   ; sex-a nurturing time
+  b-nurturing   ; sex-b nurturing time
   ;number-eggs  ; number of eggs spawn
   ;egg-size     ; energy provided to each descendent
 ]
@@ -44,11 +44,11 @@ to setup
     set age adult-age
     set size 3
     set energy random max-energy
-    set breeding 0
+    set nurturing 0
     setxy random-xcor random-ycor
     ; initial g-type
-    set a-breeding random hatch-age
-    set b-breeding random hatch-age
+    set a-nurturing random hatch-age
+    set b-nurturing random hatch-age
     ;set number-eggs random initial-number-eggs
     ;set egg-size random initial-egg-size
   ]
@@ -104,21 +104,21 @@ to metabolise ;.turtle
 end
 
 to nurture ;.turtle
-  ; check the adult is breeding
-  if breeding = 0 [ stop ]
+  ; check the adult is nurturing
+  if nurturing = 0 [ stop ]
   ; spend energy feeding offspring
   let offspring turtle-set turtles-here with [ size = 0 ]
-  set energy energy - (count offspring * breeding-energy)
+  set energy energy - (count offspring * nurturing-energy)
   ask offspring [
-    set energy energy + breeding-energy
+    set energy energy + nurturing-energy
   ]
-  set breeding breeding - 1
+  set nurturing nurturing - 1
 end
 
 to move ;.turtle
   ; check mobility
   if age < hatch-age or  ; eggs can't move
-     breeding > 0        ; when breeding, stay at home
+     nurturing > 0        ; when nurturing, stay at home
     [ stop ]
   ; take a step in a random direction
   right random-float 50
@@ -151,16 +151,16 @@ to reproduce ;.turtle
       set age 0
       set size 0
       random-sex
-      set breeding 0
+      set nurturing 0
       ; inherit mutated g-type
-      set a-breeding mutate ([ a-breeding ] of one-of parents)
-      set b-breeding mutate ([ b-breeding ] of one-of parents)
+      set a-nurturing mutate ([ a-nurturing ] of one-of parents)
+      set b-nurturing mutate ([ b-nurturing ] of one-of parents)
       ;set number-eggs mutate ([ number-eggs ] of one-of parents) drift
       ;set egg-size mutate ([ egg-size ] of one-of parents) drift
     ]
-    ; start breeding
-    ask parent-a [ set breeding a-breeding ]
-    ask parent-b [ set breeding b-breeding ]
+    ; start nurturing
+    ask parent-a [ set nurturing a-nurturing ]
+    ask parent-b [ set nurturing b-nurturing ]
   ]
 end
 
@@ -179,22 +179,22 @@ to and-die ;.turtle
   if energy <= 0 [ die ]
 end
 
-to invasion [ n $a-breeding $b-breeding ]
+to invasion [ n $a-nurturing $b-nurturing ]
   ; check parameter integrity
   if n < 0 or
-     $a-breeding < 0 or
-     $b-breeding < 0
+     $a-nurturing < 0 or
+     $b-nurturing < 0
     [ stop ]
   ; create an invasion of n organisms with given g-type
   create-turtles n [
-    set a-breeding $a-breeding
-    set b-breeding $b-breeding
+    set a-nurturing $a-nurturing
+    set b-nurturing $b-nurturing
     random-sex
     set color red
     set age adult-age
     set size 3
     set energy random max-energy
-    set breeding 0
+    set nurturing 0
     setxy random-xcor random-ycor
   ]
 end
@@ -249,7 +249,7 @@ max-population
 max-population
 2
 200
-200.0
+100.0
 1
 1
 NIL
@@ -303,12 +303,12 @@ pop.
 100.0
 true
 true
-"" ""
+"set-plot-y-range 0 max-population" ""
 PENS
 "sex-a" 1.0 0 -7500403 true "" "plot count sex-a"
 "sex-b" 1.0 0 -955883 true "" "plot count sex-b"
 "eggs" 1.0 0 -1184463 true "" "plot count patches with [ pcolor = white ]"
-"breeding" 1.0 0 -5825686 true "" "plot count turtles with [ breeding > 0 ]"
+"nurturing" 1.0 0 -5825686 true "" "plot count turtles with [ nurturing > 0 ]"
 
 MONITOR
 785
@@ -360,7 +360,7 @@ PLOT
 255
 parental investment
 time
-invest.
+nurtur.
 0.0
 100.0
 0.0
@@ -369,16 +369,16 @@ true
 true
 "" ""
 PENS
-"a-breeding" 1.0 0 -7500403 true "" "if any? sex-a\n[ plot mean [a-breeding] of sex-a ]"
-"b-breeding" 1.0 0 -955883 true "" "if any? sex-b\n[ plot mean [b-breeding] of sex-b ]"
+"a-nurturing" 1.0 0 -7500403 true "" "if any? sex-a\n[ plot mean [a-nurturing] of sex-a ]"
+"b-nurturing" 1.0 0 -955883 true "" "if any? sex-b\n[ plot mean [b-nurturing] of sex-b ]"
 
 PLOT
 690
 265
 920
 385
-b-breeding histogram
-breeding time
+b-nurturing histogram
+nurturing time
 pop.
 0.0
 60.0
@@ -386,19 +386,19 @@ pop.
 50.0
 true
 false
-"set-plot-x-range 0 hatch-age * 1.25\nset-plot-y-range 0 max-population / 4\nset-histogram-num-bars 50" "histogram [ b-breeding ] of sex-b  ; using the default plot pen"
+"set-plot-x-range 0 hatch-age * 1.25\nset-plot-y-range 0 max-population / 4\nset-histogram-num-bars 50" "histogram [ b-nurturing ] of sex-b  ; using the default plot pen"
 PENS
 "default" 1.0 1 -955883 true "" ""
-"hatch-age" 0.0 0 -1604481 false "plot-pen-up\nplotxy hatch-age 0 \nplot-pen-down\nplotxy hatch-age plot-y-max" ""
-"mean breading time" 1.0 0 -1184463 true "" "plot-pen-reset\nlet m mean [ b-breeding ] of sex-b\nplot-pen-up\nplotxy m 0 \nplot-pen-down\nplotxy m plot-y-max"
+"hatch-age" 0.0 0 -1604481 false "" "plot-pen-up\nplotxy hatch-age 0 \nplot-pen-down\nplotxy hatch-age plot-y-max"
+"mean breading time" 1.0 0 -1184463 true "" "plot-pen-reset\nlet m mean [ b-nurturing ] of sex-b\nplot-pen-up\nplotxy m 0 \nplot-pen-down\nplotxy m plot-y-max"
 
 PLOT
 452
 265
 682
 385
-a-breeding histogram
-breeding time
+a-nurturing histogram
+nurturing time
 pop.
 0.0
 60.0
@@ -406,19 +406,19 @@ pop.
 50.0
 true
 false
-"set-plot-x-range 0 hatch-age * 1.25\nset-plot-y-range 0 max-population / 4\nset-histogram-num-bars 50" "histogram [ a-breeding ] of sex-a  ; using the default plot pen"
+"set-plot-x-range 0 hatch-age * 1.25\nset-plot-y-range 0 max-population / 4\nset-histogram-num-bars 50" "histogram [ a-nurturing ] of sex-a  ; using the default plot pen"
 PENS
 "default" 1.0 1 -7500403 true "" ""
-"hatch-age" 0.0 0 -1604481 false "plot-pen-up\nplotxy hatch-age 0 \nplot-pen-down\nplotxy hatch-age plot-y-max" ""
-"mean breading time" 1.0 0 -1184463 true "" "plot-pen-reset\nlet m mean [ a-breeding ] of sex-a\nplot-pen-up\nplotxy m 0 \nplot-pen-down\nplotxy m plot-y-max"
+"hatch-age" 0.0 0 -1604481 false "" "plot-pen-up\nplotxy hatch-age 0 \nplot-pen-down\nplotxy hatch-age plot-y-max"
+"mean breading time" 1.0 0 -1184463 true "" "plot-pen-reset\nlet m mean [ a-nurturing ] of sex-a\nplot-pen-up\nplotxy m 0 \nplot-pen-down\nplotxy m plot-y-max"
 
 MONITOR
 785
 150
 860
 195
-a-breeding
-mean [a-breeding] of sex-a
+a-nurturing
+mean [a-nurturing] of sex-a
 2
 1
 11
@@ -428,8 +428,8 @@ MONITOR
 195
 860
 240
-b-breeding
-mean [b-breeding] of sex-b
+b-nurturing
+mean [b-nurturing] of sex-b
 2
 1
 11
@@ -459,8 +459,8 @@ MONITOR
 70
 915
 115
-breeding
-count turtles with [ breeding > 0 ]
+nurturing
+count turtles with [ nurturing > 0 ]
 17
 1
 11
@@ -561,7 +561,7 @@ MONITOR
 684
 435
 (A) mean investment / hatch age
-mean [ a-breeding ] of sex-a / hatch-age
+mean [ a-nurturing ] of sex-a / hatch-age
 2
 1
 11
@@ -572,7 +572,7 @@ MONITOR
 920
 435
 (B) mean investment / hatch age
-mean [ b-breeding ] of sex-b / hatch-age
+mean [ b-nurturing ] of sex-b / hatch-age
 2
 1
 11
@@ -582,8 +582,8 @@ SLIDER
 555
 430
 588
-breeding-energy
-breeding-energy
+nurturing-energy
+nurturing-energy
 0
 40
 10.0
