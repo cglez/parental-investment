@@ -597,7 +597,7 @@ HORIZONTAL
 
 This is an ecosystem model for the study of parental investment in sexual reproduction and focused primarily on the sexual conflict. In this model, a life form with two sexes reproduce and nurture offspring so to increase their chance of survival. The amount of time a parent is to spend on nurturing is determined by its genes. Each sex exhibits differentiated behaviour due to sex-limited genes. These traits are transmitted to the descendants and open to variation through mutation. By simulating certain ecological conditions and species characteristics one can see what parental investment strategies emerge in the long run based solely in the survival of the fittest.
 
-This model is based on the NetLogo library model *Wolf-Sheep stride inheritance*, a predator-prey ecosystem with inheritance model.
+This model is based on the NetLogo library model *Wolf-Sheep Stride Inheritance*, a predator-prey ecosystem with inheritance model.
 
 ## How it Works
 
@@ -697,9 +697,9 @@ This is a basic model of parental investment focused on sexual conflict and can 
 
 This model could serve as a start point to build other models that study the other conflicts in parental investment: the parent-offspring conflict and the sibling conflict.
 
-## Related Models
+## Credits
 
-Wolf Sheep Stride Inheritance
+Parts of the model were inspired by the Netlogo Wolf Sheep Stride Inheritance model by Novak, M. and Wilensky, U. (2006).  http://ccl.northwestern.edu/netlogo/models/WolfSheepStrideInheritance. Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
 
 ## How to Cite
 
