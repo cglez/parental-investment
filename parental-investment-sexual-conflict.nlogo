@@ -534,7 +534,7 @@ egg-size
 egg-size
 0
 200
-50.0
+0.0
 1
 1
 NIL
@@ -761,6 +761,154 @@ NetLogo 6.0.2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="Number of eggs" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="100000"/>
+    <metric>count sex-a</metric>
+    <metric>count sex-b</metric>
+    <metric>mean [a-nurturing] of sex-a</metric>
+    <metric>mean [b-nurturing] of sex-b</metric>
+    <enumeratedValueSet variable="egg-size">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-population">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hatch-age">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-energy">
+      <value value="800"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="drift">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-eggs">
+      <value value="1"/>
+      <value value="2"/>
+      <value value="3"/>
+      <value value="4"/>
+      <value value="8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="min-energy-reproduce">
+      <value value="500"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nurturing-energy">
+      <value value="10"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="Egg size" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="100000"/>
+    <metric>count sex-a</metric>
+    <metric>count sex-b</metric>
+    <metric>mean [a-nurturing] of sex-a</metric>
+    <metric>mean [b-nurturing] of sex-b</metric>
+    <enumeratedValueSet variable="egg-size">
+      <value value="0"/>
+      <value value="10"/>
+      <value value="25"/>
+      <value value="50"/>
+      <value value="75"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-population">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hatch-age">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-energy">
+      <value value="800"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="drift">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-eggs">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="min-energy-reproduce">
+      <value value="500"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nurturing-energy">
+      <value value="10"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="Sexual selction" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="100000"/>
+    <metric>count sex-a</metric>
+    <metric>count sex-b</metric>
+    <metric>mean [a-nurturing] of sex-a</metric>
+    <metric>mean [b-nurturing] of sex-b</metric>
+    <enumeratedValueSet variable="egg-size">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-population">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hatch-age">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-energy">
+      <value value="800"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="drift">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-eggs">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="min-energy-reproduce">
+      <value value="0"/>
+      <value value="300"/>
+      <value value="500"/>
+      <value value="800"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nurturing-energy">
+      <value value="10"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="Rearing cost" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="100000"/>
+    <metric>count sex-a</metric>
+    <metric>count sex-b</metric>
+    <metric>mean [a-nurturing] of sex-a</metric>
+    <metric>mean [b-nurturing] of sex-b</metric>
+    <enumeratedValueSet variable="egg-size">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-population">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hatch-age">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-energy">
+      <value value="800"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="drift">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-eggs">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="min-energy-reproduce">
+      <value value="500"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nurturing-energy">
+      <value value="1"/>
+      <value value="10"/>
+      <value value="20"/>
+      <value value="30"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
